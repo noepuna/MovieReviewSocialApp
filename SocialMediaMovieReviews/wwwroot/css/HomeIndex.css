@@ -1,0 +1,12 @@
+﻿h1 {
+    color: #7e9dab;
+    font: x-large;
+}
+
+
+.home-tags {
+    display: flex;
+    justify-content: center;
+    font-size: 30px;
+    gap: 30px;
+}

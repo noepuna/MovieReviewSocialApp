@@ -1,0 +1,46 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@model IEnumerable<SocialMediaMovieReviews.Models.Review>
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@{
+
+
+    ViewData["Title"] = "Index";
+}
+<head>
+    <link href="~/css/ReviewIndex.css" rel="stylesheet" type="text/css" />
+</head>
+
+<h1>Reviews Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+@foreach (var item in Model)
+{
+
+    <div class="card">
+        <div class="card-header">
+            @item.User.User_Name
+        </div>
+        <div class="card-body">
+            <blockquote class="blockquote mb-0">
+                <p>@item.Text</p>
+                <footer class="blockquote-footer"><a asp-controller="Movies" asp-action="Details" asp-route-id="@item.Movie.Id">@item.Movie.Title</a><cite title="Source Title"> @item.Rating/10</cite></footer>
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    var userid = (await UserManager.GetUserAsync(User)).Id;
+                    @if (userid == item.UserId)
+                    {
+                        <p>
+                            <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                            <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        </p>
+                    }
+                }
+            </blockquote>
+        </div>
+    </div>
+}

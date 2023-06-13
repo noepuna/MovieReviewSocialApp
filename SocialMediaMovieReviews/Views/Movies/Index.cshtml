@@ -1,0 +1,40 @@
+﻿@model IEnumerable<SocialMediaMovieReviews.Models.Movie>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<head>
+    <head>
+        <link href="~/css/MovieIndex.css" rel="stylesheet" type="text/css" />
+    </head>
+</head>
+
+<body>
+    <h1>Movies Index</h1>
+
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+
+    <!--
+        TODO:
+             set up flex box/grid to layout the newfound movie posters
+    -->
+
+    <div class="flex-container">
+        @foreach (var item in Model)
+        {
+            <a asp-action="Details" asp-route-id="@item.Id" style="text-decoration:none; color:black;">
+                <!-- Card -->
+                <div class="card">
+                    <img class="card-img-top" src="@item.PosterURL" alt="@item.Title">
+                    <div class="card-body" style="text-align:center;">
+                        <p class="card-text">@item.Title (@item.ReleaseDate.Year)</p>
+                    </div>
+                </div>
+            </a>
+        }
+
+    </div>
+</body>

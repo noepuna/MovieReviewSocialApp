@@ -1,0 +1,38 @@
+﻿.flex-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.poster {
+}
+
+.card {
+    background-color: #7e9dab;
+    margin-bottom: 10px;
+}
+
+.card-header {
+    background-color: #536793;
+    width: 100%;
+}
+
+#white-background {
+    background-color: #cbe0e6;
+    padding: 20px;
+    border-radius: 25px;
+    box-shadow: 10px 10px 5px #8eaab2;
+    margin-bottom: 10px;
+}
+
+@media only screen and (max-width: 668px) {
+    /* For mobile phones: */
+    .traileriframe {
+        width: 450px;
+    }
+
+    .poster-img {
+        width: 50px;
+    }
+}

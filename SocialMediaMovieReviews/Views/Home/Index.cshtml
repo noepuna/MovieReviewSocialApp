@@ -1,0 +1,65 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<head>
+    <link href="~/css/HomeIndex.css" rel="stylesheet" type="text/css" />
+</head>
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    @*<p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>*@
+    <p>Everyone's a critic.</p>
+
+    
+    @*add two links that switch between movie mode and account mode. 
+    when clicked it changes the hidden value, that will be the mode, using javascript*@
+    <div class="home-tags">
+        <p id="movies-btn" style="color: #536793; text-decoration: underline">Movies</p>
+        <p id="accounts-btn" style="color: #7e9dab;">Accounts</p>
+    </div>
+
+    @using(Html.BeginForm("Search", "Home"))
+    {
+        <div>
+            <div class="form-group">
+                <input type="text" id="search-input" name="searchtext" placeholder="Search Movies..." class="form-control" style="border-radius: 20p; background-color: #cbe0e6;" />
+            </div>
+
+            @*hidden value for whether searching for movie or account*@
+            <div>
+                <input type="hidden" name="searchtype" id="hidden-value" value="search-movies"/>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Search" class="btn btn-primary" />
+            </div>
+
+        </div>
+    }
+</div>
+
+<script>
+    document.getElementById("movies-btn").onclick = function () { moviesClicked() };
+    document.getElementById("accounts-btn").onclick = function () { accountsClicked() };
+
+    function moviesClicked() {
+        document.getElementById("hidden-value").value = "search-movies";
+        document.getElementById("search-input").placeholder = "Search Movies...";
+
+        document.getElementById("accounts-btn").style.color = "#7e9dab";
+        document.getElementById("accounts-btn").style.textDecoration = "none";
+        document.getElementById("movies-btn").style.color = "#536793";
+        document.getElementById("movies-btn").style.textDecoration = "underline";
+    }
+
+    function accountsClicked() {
+        document.getElementById("hidden-value").value = "search-accounts";
+        document.getElementById("search-input").placeholder = "Search Accounts...";
+
+        document.getElementById("movies-btn").style.color = "#7e9dab";
+        document.getElementById("movies-btn").style.textDecoration = "none";
+        document.getElementById("accounts-btn").style.color = "#536793";
+        document.getElementById("accounts-btn").style.textDecoration = "underline";
+    }
+</script>

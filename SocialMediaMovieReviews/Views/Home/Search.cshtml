@@ -1,0 +1,25 @@
+﻿@model IEnumerable<SocialMediaMovieReviews.Models.Movie>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<body>
+    <h1>Search Movies</h1>
+
+    <div class="flex-container">
+        @foreach (var item in Model)
+        {
+            <a asp-controller="Movies" asp-action="Details" asp-route-id="@item.Id" style="text-decoration:none; color:black;">
+                <!-- Card -->
+                <div class="card">
+                    <img class="card-img-top" src="@item.PosterURL" alt="@item.Title">
+                    <div class="card-body" style="text-align:center;">
+                        <p class="card-text">@item.Title (@item.ReleaseDate.Year)</p>
+                    </div>
+                </div>
+            </a>
+        }
+
+    </div>
+</body>

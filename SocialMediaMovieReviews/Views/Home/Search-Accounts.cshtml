@@ -1,0 +1,17 @@
+﻿@model IEnumerable<SocialMediaMovieReviews.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<body>
+    <h1>Search Accounts</h1>
+
+    <div class="flex-container">
+        @foreach (var user in Model)
+        {
+            <p>@user.User_Name</p>
+        }
+
+    </div>
+</body>

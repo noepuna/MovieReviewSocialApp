@@ -1,0 +1,34 @@
+﻿.flex-container {
+    display: flex;
+    /*justify-content: center;*/
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.card-img-top {
+    height: 30rem;
+}
+
+.card {
+    background-color: #7e9dab;
+    width: 18rem;
+    flex: 25%;
+}
+
+.card-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Responsive layout - makes a one column-layout instead of a two-column layout */
+@media (max-width: 800px) {
+    .card {
+        width: 24rem;
+        margin-bottom: 15px;
+    }
+
+    .flex-container {
+        justify-content: center;
+    }
+}
