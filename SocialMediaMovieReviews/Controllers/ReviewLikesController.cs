@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +15,12 @@ namespace SocialMediaMovieReviews.Controllers
     public class ReviewLikesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ReviewLikesController(ApplicationDbContext context)
+        public ReviewLikesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: ReviewLikes
@@ -45,6 +49,40 @@ namespace SocialMediaMovieReviews.Controllers
             }
 
             return View(reviewLike);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> AddLike([Bind("Id,UserId,ReviewId,MovieId,isLiked")] ReviewLike reviewLike)
+        {
+            var userid = (await _userManager.GetUserAsync(User)).Id;
+            /*ReviewLike reviewLike = new ReviewLike();
+            reviewLike.isLiked = liked;
+            reviewLike.UserId = userid;
+            reviewLike.ReviewId = reviewid;
+            reviewLike.MovieId = movieid;*/
+            reviewLike.UserId = userid;
+            _context.Add(reviewLike);
+            await _context.SaveChangesAsync();
+
+            var movieDetailsUrl = Url.Action("Details", "Movies", new { id = reviewLike.MovieId });
+            return Redirect(movieDetailsUrl);
+        }
+
+        public async Task<IActionResult> RemoveLike(int id, bool? isliked)
+        {
+            ReviewLike like = _context.ReviewLikes.Where(l => l.Id == id).FirstOrDefault();
+            if (isliked.HasValue)
+            {
+                like.isLiked = isliked.Value;
+            }
+            else
+            {
+                _context.ReviewLikes.Remove(like);
+            }
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: ReviewLikes/Create

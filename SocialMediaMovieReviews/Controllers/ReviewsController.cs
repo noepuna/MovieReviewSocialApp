@@ -6,12 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SocialMediaMovieReviews.Data;
 using SocialMediaMovieReviews.Models;
 
-namespace MovieReviewMediaApp.Controllers
+namespace SocialMediaMovieReviews.Controllers
 {
     public class ReviewsController : Controller
     {
@@ -22,15 +21,6 @@ namespace MovieReviewMediaApp.Controllers
         {
             _context = context;
             _userManager = userManager;
-        }
-
-        // GET: Reviews
-        [Authorize]
-        public async Task<IActionResult> MyReviews()
-        {
-            var userid = (await _userManager.GetUserAsync(User)).Id;
-            var applicationDbContext = _context.Review.Where(r => r.UserId == userid).Include(r => r.Movie);
-            return View(await applicationDbContext.ToListAsync());
         }
 
         // GET: Reviews
@@ -50,6 +40,7 @@ namespace MovieReviewMediaApp.Controllers
 
             var review = await _context.Review
                 .Include(r => r.Movie)
+                .Include(r => r.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (review == null)
             {
@@ -59,15 +50,36 @@ namespace MovieReviewMediaApp.Controllers
             return View(review);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> AddReview([Bind("Id,Text,Rating,MovieId,UserId")] Review review)
+        {
+            var userid = (await _userManager.GetUserAsync(User)).Id;
+            /*Review review = new Review();
+            review.User = (await _userManager.GetUserAsync(User));
+            review.UserId = userid;
+            review.Text = Text;
+            review.Rating = Rating;
+            review.MovieId = MovieId;*/
+
+            review.UserId = userid;
+            _context.Add(review);
+            await _context.SaveChangesAsync();
+            //return RedirectToAction(nameof(Index));
+            TempData["SuccessMessage"] = "Your review has been posted.";
+            //return Redirect(Request.Headers["Referer"].ToString());
+
+            // Retrieve the URL of the movie details page based on the MovieId
+            var movieDetailsUrl = Url.Action("Details", "Movies", new { id = review.MovieId });
+            return Redirect(movieDetailsUrl);
+        }
 
         // GET: Reviews/Create
-        [Authorize]
-        public IActionResult Create(int? movieid)
+        public IActionResult Create()
         {
-            ViewData["MovieId"] = new SelectList(_context.Movie, "Id", "Title");
-            ViewData["Id"] = movieid;
-            var mov = _context.Movie.Where(m => m.Id == movieid);
-            ViewData["Movie"] = mov;
+            ViewData["MovieId"] = new SelectList(_context.Movie, "Id", "Id");
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
             return View();
         }
 
@@ -76,75 +88,35 @@ namespace MovieReviewMediaApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
-        public async Task<IActionResult> CreateReview([Bind("Id,Text,Rating,MovieId,UserId")] Review review)
+        public async Task<IActionResult> Create([Bind("Id,Text,Rating,MovieId,UserId")] Review review)
         {
-            //if (ModelState.IsValid)
-            //{
-            var userid = (await _userManager.GetUserAsync(User)).Id;
-            review.User = (await _userManager.GetUserAsync(User));
-            review.UserId = userid;
-
-            _context.Add(review);
-            await _context.SaveChangesAsync();
-            //return RedirectToAction(nameof(Index));
-            return Redirect(Request.Headers["Referer"].ToString());
-            //}
+            if (ModelState.IsValid)
+            {
+                _context.Add(review);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
             ViewData["MovieId"] = new SelectList(_context.Movie, "Id", "Id", review.MovieId);
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", review.UserId);
             return View(review);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize]
-        public async Task<IActionResult> AddReview(string Text, float Rating, int MovieId)
-        {
-            var userid = (await _userManager.GetUserAsync(User)).Id;
-            Review review = new Review();
-            review.User = (await _userManager.GetUserAsync(User));
-            review.UserId = userid;
-            review.Text = Text;
-            review.Rating = Rating;
-            review.MovieId = MovieId;
-
-            _context.Add(review);
-            await _context.SaveChangesAsync();
-            //return RedirectToAction(nameof(Index));
-            TempData["SuccessMessage"] = "Your review has been posted.";
-            //return Redirect(Request.Headers["Referer"].ToString());
-
-            // Retrieve the URL of the movie details page based on the MovieId
-            var movieDetailsUrl = Url.Action("Details", "Movies", new { id = MovieId });
-            return Redirect(movieDetailsUrl);
-        }
-
-
-        [Authorize]
         // GET: Reviews/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            var userid = (await _userManager.GetUserAsync(User)).Id;
+            if (id == null || _context.Review == null)
+            {
+                return NotFound();
+            }
+
             var review = await _context.Review.FindAsync(id);
-
-            if (userid == review.UserId)
+            if (review == null)
             {
-                if (id == null || _context.Review == null)
-                {
-                    return NotFound();
-                }
-
-                review = await _context.Review.FindAsync(id);
-                if (review == null)
-                {
-                    return NotFound();
-                }
-                ViewData["MovieId"] = new SelectList(_context.Movie, "Id", "Id", review.MovieId);
-                return View(review);
+                return NotFound();
             }
-            else
-            {
-                return RedirectToAction(nameof(Index));
-            }
+            ViewData["MovieId"] = new SelectList(_context.Movie, "Id", "Id", review.MovieId);
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", review.UserId);
+            return View(review);
         }
 
         // POST: Reviews/Edit/5
@@ -159,60 +131,49 @@ namespace MovieReviewMediaApp.Controllers
                 return NotFound();
             }
 
-            //if (ModelState.IsValid)
-            //{
-            try
+            if (ModelState.IsValid)
             {
-                _context.Update(review);
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ReviewExists(review.Id))
+                try
                 {
-                    return NotFound();
+                    _context.Update(review);
+                    await _context.SaveChangesAsync();
                 }
-                else
+                catch (DbUpdateConcurrencyException)
                 {
-                    throw;
+                    if (!ReviewExists(review.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
-                //}
-
-
+                return RedirectToAction(nameof(Index));
             }
             ViewData["MovieId"] = new SelectList(_context.Movie, "Id", "Id", review.MovieId);
-            return RedirectToAction(nameof(Index));
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", review.UserId);
+            return View(review);
         }
 
-        [Authorize]
         // GET: Reviews/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            var userid = (await _userManager.GetUserAsync(User)).Id;
-            var review = await _context.Review.FindAsync(id);
-
-            if (userid == review.UserId)
+            if (id == null || _context.Review == null)
             {
-
-                if (id == null || _context.Review == null)
-                {
-                    return NotFound();
-                }
-
-                review = await _context.Review
-                    .Include(r => r.Movie)
-                    .FirstOrDefaultAsync(m => m.Id == id);
-                if (review == null)
-                {
-                    return NotFound();
-                }
-
-                return View(review);
+                return NotFound();
             }
-            else
+
+            var review = await _context.Review
+                .Include(r => r.Movie)
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (review == null)
             {
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
+
+            return View(review);
         }
 
         // POST: Reviews/Delete/5
@@ -224,22 +185,19 @@ namespace MovieReviewMediaApp.Controllers
             {
                 return Problem("Entity set 'ApplicationDbContext.Review'  is null.");
             }
-            var review = await _context.Review.Include(r => r.Likes).FirstOrDefaultAsync(r => r.Id == id);
+            var review = await _context.Review.FindAsync(id);
             if (review != null)
             {
-                foreach (var like in  review.Likes.ToList()) {
-                    _context.ReviewLikes.Remove(like);
-                }
                 _context.Review.Remove(review);
             }
-
+            
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ReviewExists(int id)
         {
-            return (_context.Review?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.Review?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

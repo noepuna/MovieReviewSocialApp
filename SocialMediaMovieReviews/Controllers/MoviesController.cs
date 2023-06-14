@@ -41,7 +41,7 @@ namespace MovieReviewMediaApp.Controllers
                 return NotFound();
             }
 
-            var movie = await _context.Movie.Include(m => m.Reviews).ThenInclude(r => r.User).ThenInclude(r => r.Likes)
+            var movie = await _context.Movie.Include(m => m.Reviews).ThenInclude(r => r.Likes).Include(m => m.Reviews).ThenInclude(r => r.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (movie == null)
             {
@@ -167,36 +167,6 @@ namespace MovieReviewMediaApp.Controllers
             return (_context.Movie?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize]
-        public async Task<IActionResult> AddLike(bool liked, int reviewid, int movieid)
-        {
-            var userid = (await _userManager.GetUserAsync(User)).Id;
-            var r = _context.Review.Where(r => r.UserId == userid).FirstOrDefault();
-            ReviewLike reviewLike = new ReviewLike();
-            reviewLike.isLiked = liked;
-            reviewLike.UserId = userid;
-            reviewLike.ReviewId = reviewid;
-            reviewLike.MovieId = movieid;
-            _context.ReviewLikes.Add(reviewLike);
-            r.Likes?.Add(reviewLike);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        public async Task<IActionResult> RemoveLike(int id, bool? isliked)
-        {
-            ReviewLike like = _context.ReviewLikes.Where(l => l.Id == id).FirstOrDefault();
-            if (isliked.HasValue)
-            {
-                like.isLiked = isliked.Value;
-            }else
-            {
-                _context.ReviewLikes.Remove(like);
-            }
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+        
     }
 }
