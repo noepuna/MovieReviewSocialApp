@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,17 +17,28 @@ namespace SocialMediaMovieReviews.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAntiforgery _antiforgery;
 
-        public ReviewsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public ReviewsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IAntiforgery antiforgery)
         {
             _context = context;
             _userManager = userManager;
+            _antiforgery = antiforgery;
         }
 
         // GET: Reviews
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Review.Include(r => r.Movie).Include(r => r.User);
+            return View(await applicationDbContext.ToListAsync());
+        }
+
+        // GET: Reviews
+        [Authorize]
+        public async Task<IActionResult> MyReviews()
+        {
+            var userid = (await _userManager.GetUserAsync(User)).Id;
+            var applicationDbContext = _context.Review.Where(r => r.UserId == userid).Include(r => r.Movie);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -50,29 +62,41 @@ namespace SocialMediaMovieReviews.Controllers
             return View(review);
         }
 
+        public JsonResult GetAntiforgeryToken()
+        {
+
+            var tokens = _antiforgery.GetAndStoreTokens(HttpContext);
+            var token = tokens.RequestToken;
+            return Json(new { token });
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> AddReview([Bind("Id,Text,Rating,MovieId,UserId")] Review review)
+        public async Task<JsonResult> AddReview(string reviewtext, float reviewrating, int reviewmovieid)
         {
             var userid = (await _userManager.GetUserAsync(User)).Id;
-            /*Review review = new Review();
-            review.User = (await _userManager.GetUserAsync(User));
+            var movie = _context.Movie.Where(m => m.Id == reviewmovieid).FirstOrDefault();
+            Review review = new Review();
             review.UserId = userid;
-            review.Text = Text;
-            review.Rating = Rating;
-            review.MovieId = MovieId;*/
+            review.Text = reviewtext;
+            review.Rating = reviewrating;
+            review.MovieId = reviewmovieid;
+            review.Movie = movie;
 
             review.UserId = userid;
             _context.Add(review);
             await _context.SaveChangesAsync();
             //return RedirectToAction(nameof(Index));
-            TempData["SuccessMessage"] = "Your review has been posted.";
             //return Redirect(Request.Headers["Referer"].ToString());
 
             // Retrieve the URL of the movie details page based on the MovieId
-            var movieDetailsUrl = Url.Action("Details", "Movies", new { id = review.MovieId });
-            return Redirect(movieDetailsUrl);
+            /*var movieDetailsUrl = Url.Action("Details", "Movies", new { id = review.MovieId });
+            return Redirect(movieDetailsUrl);*/
+            return Json(new { reviewid = review.Id, review_text = review.Text, 
+                review_rating = review.Rating, review_username = review.User.User_Name,
+                review_movietitle = review.Movie.Title
+            });
         }
 
         // GET: Reviews/Create
@@ -131,8 +155,7 @@ namespace SocialMediaMovieReviews.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
-            {
+            
                 try
                 {
                     _context.Update(review);
@@ -149,11 +172,12 @@ namespace SocialMediaMovieReviews.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
-            }
+            return Redirect(Request.Headers["Referer"].ToString());
+
             ViewData["MovieId"] = new SelectList(_context.Movie, "Id", "Id", review.MovieId);
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", review.UserId);
-            return View(review);
+            /*return View(review);*/
+            return Redirect(Request.Headers["Referer"].ToString());
         }
 
         // GET: Reviews/Delete/5

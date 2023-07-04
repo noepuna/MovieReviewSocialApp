@@ -18,6 +18,11 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => {
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddAntiforgery(options =>
+{
+    // Configure antiforgery options if needed
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,7 +1,11 @@
-﻿@model IEnumerable<SocialMediaMovieReviews.Models.Review>
+﻿@using Microsoft.AspNetCore.Identity;
+@model IEnumerable<SocialMediaMovieReviews.Models.Review>
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
 
 @{
     ViewData["Title"] = "Index";
+    string? userid = null;
 }
 
 <h1>Index</h1>
@@ -28,8 +32,13 @@
         </tr>
     </thead>
     <tbody>
+        @if (SignInManager.IsSignedIn(User))
+        {
+            userid = (await UserManager.GetUserAsync(User)).Id;
+        }
 @foreach (var item in Model) {
-        <tr>
+            
+            <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Text)
             </td>
@@ -42,11 +51,14 @@
             <td>
                 @Html.DisplayFor(modelItem => item.User.Id)
             </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                @if (item.UserId == userid)
+                {
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
                 <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
             </td>
+            }
         </tr>
 }
     </tbody>

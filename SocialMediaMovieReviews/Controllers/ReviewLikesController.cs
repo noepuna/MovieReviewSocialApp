@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +17,13 @@ namespace SocialMediaMovieReviews.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAntiforgery _antiforgery;
 
-        public ReviewLikesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public ReviewLikesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IAntiforgery antiforgery)
         {
             _context = context;
             _userManager = userManager;
+            _antiforgery = antiforgery;
         }
 
         // GET: ReviewLikes
@@ -51,28 +54,51 @@ namespace SocialMediaMovieReviews.Controllers
             return View(reviewLike);
         }
 
+        public JsonResult GetAntiforgeryToken()
+        {
+            var tokens = _antiforgery.GetAndStoreTokens(HttpContext);
+            var token = tokens.RequestToken;
+            return Json(new { token });
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> AddLike([Bind("Id,UserId,ReviewId,MovieId,isLiked")] ReviewLike reviewLike)
+        public async Task<JsonResult> AddLike(bool liked, int reviewid, int movieid /*[Bind("Id,UserId,ReviewId,MovieId,isLiked")] ReviewLike reviewLike*/)
         {
             var userid = (await _userManager.GetUserAsync(User)).Id;
-            /*ReviewLike reviewLike = new ReviewLike();
+            ReviewLike reviewLike = new ReviewLike();
             reviewLike.isLiked = liked;
             reviewLike.UserId = userid;
             reviewLike.ReviewId = reviewid;
-            reviewLike.MovieId = movieid;*/
-            reviewLike.UserId = userid;
+            reviewLike.MovieId = movieid;
+            
             _context.Add(reviewLike);
             await _context.SaveChangesAsync();
 
             var movieDetailsUrl = Url.Action("Details", "Movies", new { id = reviewLike.MovieId });
-            return Redirect(movieDetailsUrl);
+            var likecount = _context.ReviewLikes.Where(l => l.isLiked == true && l.ReviewId == reviewid).Count();
+            var dislikecount = _context.ReviewLikes.Where(l => l.isLiked == false && l.ReviewId == reviewid).Count();
+
+            /*return Redirect(movieDetailsUrl);*/
+            if (liked == true)
+            {
+                return Json(new { success = true, msg = "Added Like", id = reviewLike.Id, likecount = likecount, dislikecount = dislikecount});
+            }
+            else
+            {
+                return Json(new { success = true, msg = "Added Dislike", id = reviewLike.Id, likecount = likecount, dislikecount = dislikecount });
+            }
+            
         }
 
-        public async Task<IActionResult> RemoveLike(int id, bool? isliked)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> RemoveLike(int likeid, bool? isliked)
         {
-            ReviewLike like = _context.ReviewLikes.Where(l => l.Id == id).FirstOrDefault();
+            var like = _context.ReviewLikes.First(r => r.Id == likeid);
+            var reviewid = like.ReviewId;
             if (isliked.HasValue)
             {
                 like.isLiked = isliked.Value;
@@ -82,7 +108,21 @@ namespace SocialMediaMovieReviews.Controllers
                 _context.ReviewLikes.Remove(like);
             }
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            var likecount = _context.ReviewLikes.Where(l => l.isLiked == true && l.ReviewId == reviewid).Count();
+            var dislikecount = _context.ReviewLikes.Where(l => l.isLiked == false && l.ReviewId == reviewid).Count();
+
+            /*return Redirect(movieDetailsUrl);*/
+            if (isliked == true)
+            {
+                return Json(new { success = true, msg = "Switched to Like", likecount = likecount, dislikecount = dislikecount });
+            }
+            else if (isliked == false)
+            {
+                return Json(new { success = true, msg = "Switched to Dislike", likecount = likecount, dislikecount = dislikecount });
+            }else
+            {
+                return Json(new { success = true, msg = "Removed", likecount = likecount, dislikecount = dislikecount });
+            }
         }
 
         // GET: ReviewLikes/Create
