@@ -1,0 +1,25 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@model SocialMediaMovieReviews.Models.ApplicationUser
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<head>
+    <link href="~/css/MovieDetails.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    
+    <h1>
+        User Page!
+    </h1>
+    <h2>
+        @Model.UserName
+    </h2>
+</body>
+

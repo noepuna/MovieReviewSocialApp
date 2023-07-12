@@ -14,6 +14,7 @@ namespace SocialMediaMovieReviews.Data
         public DbSet<SocialMediaMovieReviews.Models.Movie>? Movie { get; set; }
         public DbSet<SocialMediaMovieReviews.Models.Review>? Review { get; set; }
         public DbSet<SocialMediaMovieReviews.Models.ReviewLike>? ReviewLikes { get; set;}
+        public DbSet<SocialMediaMovieReviews.Models.ViewedReview>? ViewedReview { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,6 +29,19 @@ namespace SocialMediaMovieReviews.Data
                 .WithMany(r => r.Likes)
                 .HasForeignKey(rl => rl.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull); // Specify the desired cascade behavior
+
+            modelBuilder.Entity<ViewedReview>()
+                .HasOne(vr => vr.Review)
+                .WithMany(r => r.Views)
+                .HasForeignKey(vr => vr.ReviewId)
+                .OnDelete(DeleteBehavior.ClientSetNull); // Specify the desired cascade behavior
+
+            modelBuilder.Entity<ViewedReview>()
+                .HasOne(vr => vr.User)
+                .WithMany(u => u.Views)
+                .HasForeignKey(vr => vr.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull); // Specify the desired cascade behavior
+
 
             // Other entity configurations...
 

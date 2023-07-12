@@ -17,10 +17,25 @@ namespace SocialMediaMovieReviews.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.16")
+                .HasAnnotation("ProductVersion", "6.0.18")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+
+            modelBuilder.Entity("ApplicationUserApplicationUser", b =>
+                {
+                    b.Property<string>("FollowersId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("FollowingId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("FollowersId", "FollowingId");
+
+                    b.HasIndex("FollowingId");
+
+                    b.ToTable("ApplicationUserApplicationUser");
+                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -335,6 +350,45 @@ namespace SocialMediaMovieReviews.Migrations
                     b.ToTable("ReviewLikes");
                 });
 
+            modelBuilder.Entity("SocialMediaMovieReviews.Models.ViewedReview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("ReviewId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReviewId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ViewedReview");
+                });
+
+            modelBuilder.Entity("ApplicationUserApplicationUser", b =>
+                {
+                    b.HasOne("SocialMediaMovieReviews.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("FollowersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SocialMediaMovieReviews.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("FollowingId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -430,11 +484,30 @@ namespace SocialMediaMovieReviews.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SocialMediaMovieReviews.Models.ViewedReview", b =>
+                {
+                    b.HasOne("SocialMediaMovieReviews.Models.Review", "Review")
+                        .WithMany("Views")
+                        .HasForeignKey("ReviewId")
+                        .IsRequired();
+
+                    b.HasOne("SocialMediaMovieReviews.Models.ApplicationUser", "User")
+                        .WithMany("Views")
+                        .HasForeignKey("UserId")
+                        .IsRequired();
+
+                    b.Navigation("Review");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("SocialMediaMovieReviews.Models.ApplicationUser", b =>
                 {
                     b.Navigation("Likes");
 
                     b.Navigation("Reviews");
+
+                    b.Navigation("Views");
                 });
 
             modelBuilder.Entity("SocialMediaMovieReviews.Models.Movie", b =>
@@ -445,6 +518,8 @@ namespace SocialMediaMovieReviews.Migrations
             modelBuilder.Entity("SocialMediaMovieReviews.Models.Review", b =>
                 {
                     b.Navigation("Likes");
+
+                    b.Navigation("Views");
                 });
 #pragma warning restore 612, 618
         }

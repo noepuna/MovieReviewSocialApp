@@ -14,6 +14,7 @@ namespace SocialMediaMovieReviews.Models
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
         public ICollection<ReviewLike> Likes { get; set; }
+        public ICollection<ViewedReview> Views { get; set; }
 
     }
 }

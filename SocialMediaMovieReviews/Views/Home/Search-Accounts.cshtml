@@ -8,10 +8,12 @@
     <h1>Search Accounts</h1>
 
     <div class="flex-container">
+        <ul>
         @foreach (var user in Model)
         {
-            <p>@user.User_Name</p>
-        }
+            <li><a asp-controller="Accounts" asp-action="User" asp-route-username="@user.UserName">@user.UserName</a></li>
 
+        }
+        </ul>
     </div>
 </body>

@@ -17,6 +17,15 @@ namespace SocialMediaMovieReviews.Controllers
             _context = context;
         }
 
+        public async Task<IActionResult> User(string userid)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Id == userid);
+            
+            return _context.Users != null ?
+                              View("~/Views/Home/UserPage.cshtml", user) :
+                              Problem("Entity set 'ApplicationDbContext.Movie'  is null.");
+        }
+
         public async Task<IActionResult> Search(string searchtext, string searchtype)
         {
             if (searchtype == "search-movies")
@@ -28,8 +37,8 @@ namespace SocialMediaMovieReviews.Controllers
             else
             {
                 return _context.Users != null ?
-                              View("~/Views/Home/Search-Accounts.cshtml", await _context.Users.Where(m => m.User_Name.Contains(searchtext)).Include(m => m.Reviews).ToListAsync()) :
-                              Problem("Entity set 'ApplicationDbContext.Movie'  is null.");
+                              View("~/Views/Home/Search-Accounts.cshtml", await _context.Users.Where(m => m.UserName.Contains(searchtext)).Include(m => m.Reviews).ToListAsync()) :
+                              Problem("Entity set 'ApplicationDbContext.Users'  is null.");
             }
         }
 

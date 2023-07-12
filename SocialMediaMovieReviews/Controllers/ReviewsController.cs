@@ -29,8 +29,10 @@ namespace SocialMediaMovieReviews.Controllers
         // GET: Reviews
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Review.Include(r => r.Movie).Include(r => r.User);
-            return View(await applicationDbContext.ToListAsync());
+            var userid = (await _userManager.GetUserAsync(User)).Id;
+            var unseenReviews = _context.Review.Where(r1 => !r1.Views.Any(v => v.UserId == userid)).Include(r => r.Movie).Include(r => r.User).Include(r => r.Likes);
+            var applicationDbContext = _context.Review.Include(r => r.Movie).Include(r => r.User).Include(r => r.Likes);
+            return View(await unseenReviews.ToListAsync());
         }
 
         // GET: Reviews
@@ -94,7 +96,7 @@ namespace SocialMediaMovieReviews.Controllers
             /*var movieDetailsUrl = Url.Action("Details", "Movies", new { id = review.MovieId });
             return Redirect(movieDetailsUrl);*/
             return Json(new { reviewid = review.Id, review_text = review.Text, 
-                review_rating = review.Rating, review_username = review.User.User_Name,
+                review_rating = review.Rating, review_username = review.User.UserName,
                 review_movietitle = review.Movie.Title
             });
         }
@@ -212,6 +214,10 @@ namespace SocialMediaMovieReviews.Controllers
             var review = await _context.Review.FindAsync(id);
             if (review != null)
             {
+                var likes_to_remove = _context.ReviewLikes.Where(rl => rl.ReviewId == review.Id);
+                _context.ReviewLikes.RemoveRange(likes_to_remove);
+                var views_to_remove = _context.ViewedReview.Where(vr => vr.ReviewId == review.Id);
+                _context.ViewedReview.RemoveRange(views_to_remove);
                 _context.Review.Remove(review);
             }
             

@@ -1,3 +1,8 @@
+
+/*
+    The css for everything in the site
+*/
+
 html {
     font-size: 14px;
 }
@@ -22,3 +27,30 @@ navbar {
     background-color: #536793;
     border-color: none;
 }
+
+* {
+    font-family:'Source Sans Pro';
+}
+
+.card {
+    background-color: #7e9dab;
+    margin-bottom: 10px;
+}
+
+.card-header {
+    background-color: #536793;
+    width: 100%;
+}
+
+#likeformContainer {
+    display: flex;
+}
+
+#likeformContainer form {
+    margin-right: 15px;
+}
+
+#likeformContainer p {
+    margin-right: 3px;
+}
+
