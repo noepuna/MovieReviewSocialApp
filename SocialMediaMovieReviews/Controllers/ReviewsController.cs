@@ -79,12 +79,15 @@ namespace SocialMediaMovieReviews.Controllers
         {
             var userid = (await _userManager.GetUserAsync(User)).Id;
             var movie = _context.Movie.Where(m => m.Id == reviewmovieid).FirstOrDefault();
+            var user = _context.Users.Where(u => u.Id == userid).Include(u => u.Reviews).FirstOrDefault();
             Review review = new Review();
             review.UserId = userid;
             review.Text = reviewtext;
             review.Rating = reviewrating;
             review.MovieId = reviewmovieid;
             review.Movie = movie;
+            review.User = user;
+            user.Reviews.Add(review);
 
             review.UserId = userid;
             _context.Add(review);

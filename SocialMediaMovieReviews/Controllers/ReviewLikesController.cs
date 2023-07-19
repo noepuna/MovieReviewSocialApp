@@ -72,6 +72,11 @@ namespace SocialMediaMovieReviews.Controllers
             reviewLike.UserId = userid;
             reviewLike.ReviewId = reviewid;
             reviewLike.MovieId = movieid;
+
+            var review = _context.Review.Where(r => r.Id == reviewid).FirstOrDefault();
+
+            var user = _context.Users.Where(u => u.Id == review.UserId).Include(u => u.Likes).FirstOrDefault();
+            user.Likes.Add(reviewLike);
             
             _context.Add(reviewLike);
             await _context.SaveChangesAsync();

@@ -18,17 +18,29 @@ namespace SocialMediaMovieReviews.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<ApplicationUser>()
+                .HasMany(u => u.Followers)
+                .WithMany(u => u.Following);
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasMany(u => u.Following)
+                .WithMany(u => u.Followers);
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasMany(u => u.Likes)
+                .WithOne(l => l.User);
+
             modelBuilder.Entity<ReviewLike>()
                 .HasOne(rl => rl.Review)
                 .WithMany(r => r.Likes)
                 .HasForeignKey(rl => rl.ReviewId)
                 .OnDelete(DeleteBehavior.ClientSetNull); // Specify the desired cascade behavior
 
-            modelBuilder.Entity<ReviewLike>()
+            /*modelBuilder.Entity<ReviewLike>()
                 .HasOne(rl => rl.User)
                 .WithMany(r => r.Likes)
                 .HasForeignKey(rl => rl.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull); // Specify the desired cascade behavior
+                .OnDelete(DeleteBehavior.ClientSetNull);*/ // Specify the desired cascade behavior
 
             modelBuilder.Entity<ViewedReview>()
                 .HasOne(vr => vr.Review)
@@ -36,11 +48,26 @@ namespace SocialMediaMovieReviews.Data
                 .HasForeignKey(vr => vr.ReviewId)
                 .OnDelete(DeleteBehavior.ClientSetNull); // Specify the desired cascade behavior
 
-            modelBuilder.Entity<ViewedReview>()
+            /*modelBuilder.Entity<ViewedReview>()
                 .HasOne(vr => vr.User)
                 .WithMany(u => u.Views)
                 .HasForeignKey(vr => vr.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull); // Specify the desired cascade behavior
+                .OnDelete(DeleteBehavior.ClientSetNull);*/ // Specify the desired cascade behavior
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Cascade); // Specify the desired cascade behavior
+
+            modelBuilder.Entity<ReviewLike>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Cascade); // Specify the desired cascade behavior
+
+            modelBuilder.Entity<ViewedReview>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Cascade); // Specify the desired cascade behavior
 
 
             // Other entity configurations...

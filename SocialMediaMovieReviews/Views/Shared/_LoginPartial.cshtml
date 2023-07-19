@@ -2,12 +2,13 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 @{
-    var user = await UserManager.GetUserAsync(User);
+    
 }
 
 <ul class="navbar-nav">
     @if (SignInManager.IsSignedIn(User))
     {
+        var user = await UserManager.GetUserAsync(User);
         <li class="nav-item">
             <a class="nav-link text-dark" asp-area="" asp-controller="Reviews" asp-action="MyReviews">My Reviews</a>
         </li>

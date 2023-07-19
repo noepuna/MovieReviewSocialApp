@@ -12,8 +12,8 @@ using SocialMediaMovieReviews.Data;
 namespace SocialMediaMovieReviews.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230710171154_Initial")]
-    partial class Initial
+    [Migration("20230719195825_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -297,6 +297,9 @@ namespace SocialMediaMovieReviews.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("MovieId")
                         .HasColumnType("int");
 
@@ -313,6 +316,8 @@ namespace SocialMediaMovieReviews.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ApplicationUserId");
+
                     b.HasIndex("MovieId");
 
                     b.HasIndex("UserId");
@@ -328,6 +333,9 @@ namespace SocialMediaMovieReviews.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("MovieId")
                         .HasColumnType("int");
 
@@ -342,6 +350,8 @@ namespace SocialMediaMovieReviews.Migrations
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("MovieId");
 
@@ -360,6 +370,9 @@ namespace SocialMediaMovieReviews.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("ReviewId")
                         .HasColumnType("int");
 
@@ -368,6 +381,8 @@ namespace SocialMediaMovieReviews.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("ReviewId");
 
@@ -444,6 +459,10 @@ namespace SocialMediaMovieReviews.Migrations
 
             modelBuilder.Entity("SocialMediaMovieReviews.Models.Review", b =>
                 {
+                    b.HasOne("SocialMediaMovieReviews.Models.ApplicationUser", null)
+                        .WithMany("Reviews")
+                        .HasForeignKey("ApplicationUserId");
+
                     b.HasOne("SocialMediaMovieReviews.Models.Movie", "Movie")
                         .WithMany("Reviews")
                         .HasForeignKey("MovieId")
@@ -451,7 +470,7 @@ namespace SocialMediaMovieReviews.Migrations
                         .IsRequired();
 
                     b.HasOne("SocialMediaMovieReviews.Models.ApplicationUser", "User")
-                        .WithMany("Reviews")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -463,6 +482,10 @@ namespace SocialMediaMovieReviews.Migrations
 
             modelBuilder.Entity("SocialMediaMovieReviews.Models.ReviewLike", b =>
                 {
+                    b.HasOne("SocialMediaMovieReviews.Models.ApplicationUser", null)
+                        .WithMany("Likes")
+                        .HasForeignKey("ApplicationUserId");
+
                     b.HasOne("SocialMediaMovieReviews.Models.Movie", "Movie")
                         .WithMany()
                         .HasForeignKey("MovieId")
@@ -475,8 +498,9 @@ namespace SocialMediaMovieReviews.Migrations
                         .IsRequired();
 
                     b.HasOne("SocialMediaMovieReviews.Models.ApplicationUser", "User")
-                        .WithMany("Likes")
+                        .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Movie");
@@ -488,14 +512,19 @@ namespace SocialMediaMovieReviews.Migrations
 
             modelBuilder.Entity("SocialMediaMovieReviews.Models.ViewedReview", b =>
                 {
+                    b.HasOne("SocialMediaMovieReviews.Models.ApplicationUser", null)
+                        .WithMany("Views")
+                        .HasForeignKey("ApplicationUserId");
+
                     b.HasOne("SocialMediaMovieReviews.Models.Review", "Review")
                         .WithMany("Views")
                         .HasForeignKey("ReviewId")
                         .IsRequired();
 
                     b.HasOne("SocialMediaMovieReviews.Models.ApplicationUser", "User")
-                        .WithMany("Views")
+                        .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Review");

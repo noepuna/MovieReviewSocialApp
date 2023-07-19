@@ -155,6 +155,14 @@ namespace MovieReviewMediaApp.Controllers
             var movie = await _context.Movie.FindAsync(id);
             if (movie != null)
             {
+                // delete everything manually (can't cascade multiple paths)
+                var review = await _context.Review.FindAsync(id);
+                var likes_to_remove = _context.ReviewLikes.Where(rl => rl.ReviewId == review.Id);
+                _context.ReviewLikes.RemoveRange(likes_to_remove);
+                var views_to_remove = _context.ViewedReview.Where(vr => vr.ReviewId == review.Id);
+                _context.ViewedReview.RemoveRange(views_to_remove);
+                var reviews_to_remove = _context.Review.Where(r => r.MovieId == movie.Id);
+                _context.Review.RemoveRange(reviews_to_remove);
                 _context.Movie.Remove(movie);
             }
 

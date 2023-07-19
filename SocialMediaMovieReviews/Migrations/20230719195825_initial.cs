@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SocialMediaMovieReviews.Migrations
 {
-    public partial class Initial : Migration
+    public partial class initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -207,11 +207,17 @@ namespace SocialMediaMovieReviews.Migrations
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Rating = table.Column<float>(type: "real", nullable: false),
                     MovieId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Review", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Review_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Review_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -235,16 +241,23 @@ namespace SocialMediaMovieReviews.Migrations
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ReviewId = table.Column<int>(type: "int", nullable: false),
                     MovieId = table.Column<int>(type: "int", nullable: false),
-                    isLiked = table.Column<bool>(type: "bit", nullable: false)
+                    isLiked = table.Column<bool>(type: "bit", nullable: false),
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ReviewLikes", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_ReviewLikes_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_ReviewLikes_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ReviewLikes_Movie_MovieId",
                         column: x => x.MovieId,
@@ -265,16 +278,23 @@ namespace SocialMediaMovieReviews.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ReviewId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ViewedReview", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_ViewedReview_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_ViewedReview_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ViewedReview_Review_ReviewId",
                         column: x => x.ReviewId,
@@ -327,6 +347,11 @@ namespace SocialMediaMovieReviews.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Review_ApplicationUserId",
+                table: "Review",
+                column: "ApplicationUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Review_MovieId",
                 table: "Review",
                 column: "MovieId");
@@ -335,6 +360,11 @@ namespace SocialMediaMovieReviews.Migrations
                 name: "IX_Review_UserId",
                 table: "Review",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReviewLikes_ApplicationUserId",
+                table: "ReviewLikes",
+                column: "ApplicationUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ReviewLikes_MovieId",
@@ -350,6 +380,11 @@ namespace SocialMediaMovieReviews.Migrations
                 name: "IX_ReviewLikes_UserId",
                 table: "ReviewLikes",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ViewedReview_ApplicationUserId",
+                table: "ViewedReview",
+                column: "ApplicationUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ViewedReview_ReviewId",
