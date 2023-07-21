@@ -9,6 +9,7 @@ namespace SocialMediaMovieReviews.Models
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string User_Name { get; set; }
+        public bool isAdmin { get; set; }
 
         public ICollection<Review> Reviews { get; set; }
         public ICollection<ReviewLike> Likes { get; set; }

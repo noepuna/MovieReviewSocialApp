@@ -1,7 +1,11 @@
-﻿@model IEnumerable<SocialMediaMovieReviews.Models.Movie>
+﻿@using Microsoft.AspNetCore.Identity;
+@model IEnumerable<SocialMediaMovieReviews.Models.Movie>
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
 
 @{
     ViewData["Title"] = "Index";
+    var user = UserManager.GetUserAsync(User).Result;
 }
 
 <head>
@@ -13,9 +17,12 @@
 <body>
     <h1>Movies Index</h1>
 
-    <p>
-        <a asp-action="Create">Create New</a>
-    </p>
+    @if (user != null && user.isAdmin == true)
+    {
+        <p>
+            <a asp-action="Create">Create New</a>
+        </p>
+    }
 
     <!--
         TODO:

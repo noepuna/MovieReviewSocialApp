@@ -5,6 +5,7 @@
 
 @{
     ViewData["Title"] = "Details";
+    var user = UserManager.GetUserAsync(User).Result;
 }
 
 <head>
@@ -28,7 +29,7 @@
     @*<a asp-controller="Reviews" asp-action="Create" asp-route-movieid="@Model.Id">Create New</a>*@
 
     <div>
-
+        <a asp-action="Index">Back to List</a>
         <h5 style="text-align:center;">
             @Html.DisplayFor(model => model.Title) (@Html.DisplayFor(model => model.ReleaseDate.Year))
         </h5>
@@ -567,8 +568,13 @@
         });
     </script>
     <div>
-        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-        <a asp-action="Index">Back to List</a>
+        @if (user != null && user.isAdmin == true)
+        {
+            <a asp-action="Edit" asp-route-id="@Model?.Id">Edit | </a>
+            <a asp-action="Delete" asp-route-id="@Model?.Id">Delete</a>
+
+        }
+        
     </div>
 
 </body>

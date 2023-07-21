@@ -55,7 +55,15 @@ namespace MovieReviewMediaApp.Controllers
         // GET: Movies/Create
         public IActionResult Create()
         {
-            return View();
+            var user = _userManager.GetUserAsync(User).Result;
+            if(user != null && user.isAdmin == true)
+            {
+                return View();
+            }else
+            {
+                return NotFound();
+            }
+            
         }
 
         // POST: Movies/Create
@@ -77,17 +85,27 @@ namespace MovieReviewMediaApp.Controllers
         // GET: Movies/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Movie == null)
+            var user = _userManager.GetUserAsync(User).Result;
+            if (user != null && user.isAdmin == true)
+            {
+                if (id == null || _context.Movie == null)
+                {
+                    return NotFound();
+                }
+
+                var movie = await _context.Movie.FindAsync(id);
+                if (movie == null)
+                {
+                    return NotFound();
+                }
+                return View(movie);
+            }
+            else
             {
                 return NotFound();
             }
 
-            var movie = await _context.Movie.FindAsync(id);
-            if (movie == null)
-            {
-                return NotFound();
-            }
-            return View(movie);
+            
         }
 
         // POST: Movies/Edit/5
@@ -128,19 +146,27 @@ namespace MovieReviewMediaApp.Controllers
         // GET: Movies/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Movie == null)
+            var user = _userManager.GetUserAsync(User).Result;
+            if (user != null && user.isAdmin == true)
+            {
+                if (id == null || _context.Movie == null)
+                {
+                    return NotFound();
+                }
+
+                var movie = await _context.Movie
+                    .FirstOrDefaultAsync(m => m.Id == id);
+                if (movie == null)
+                {
+                    return NotFound();
+                }
+
+                return View(movie);
+            }
+            else
             {
                 return NotFound();
             }
-
-            var movie = await _context.Movie
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (movie == null)
-            {
-                return NotFound();
-            }
-
-            return View(movie);
         }
 
         // POST: Movies/Delete/5
